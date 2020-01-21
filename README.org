@@ -1,0 +1,16 @@
+* Org-Generation
+This project gives an informal way of documenting a code-base with
+[[https://orgmode.org/][Org]].
+
+Currently this project is in alpha, and many important features are
+being setup. Read [[https://github.com/cryptiumlabs/Org-Generation/issues][The issues for some features that are currently
+missing]]
+
+Some examples of this tool in action can be see in [[https://github.com/cryptiumlabs/Org-Generation/doc/org-generation.org][this repos doc
+folder]] also with [[https://github.com/cryptiumlabs/juvix/blob/develop/doc/Code/Juvix.org][Juvix's code documentation folder]].
+** Currently Supported Language
+- Lisp
+  + With ASDF files only!
+- Haskell
+  + Does not currently support ={- -}= semantics, first line must be a
+    =-- |=
