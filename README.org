@@ -14,3 +14,12 @@ folder]] also with [[https://github.com/cryptiumlabs/juvix/blob/develop/doc/Code
 - Haskell
   + Does not currently support ={- -}= semantics, first line must be a
     =-- |=
+** Installation
+*** Roswell
+- =ros install cryptiumlabs/org-generation=
+
+Currently the ros file does not correctly launch the program, but it
+will install the library properly.
+*** Quicklisp
+Another way of installing this project is by loading the asd file in
+this repo, and having [[https://www.quicklisp.org/beta/][Quicklisp]] installed
