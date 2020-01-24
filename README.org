@@ -23,3 +23,11 @@ will install the library properly.
 *** Quicklisp
 Another way of installing this project is by loading the asd file in
 this repo, and having [[https://www.quicklisp.org/beta/][Quicklisp]] installed
+** Running
+An example usage is the following
+#+BEGIN_SRC bash
+  org-generation src/ "test.org"
+  ! or
+  ./roswell/org-generation.ros src/ "test.org"
+
+#+END_SRC

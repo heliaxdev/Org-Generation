@@ -3,15 +3,111 @@
 #|
 exec ros -Q -- $0 "$@"
 |#
-(progn ;;init forms
-  (ros:ensure-asdf)
-  ;;#+quicklisp(ql:quickload '() :silent t)
-  )
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (declaim #+sbcl(sb-ext:muffle-conditions style-warning
+                                           sb-int:type-style-warning))
+
+  (setf asdf:*compile-file-warnings-behaviour* :ignore)
+  (setf asdf:*compile-file-failure-behaviour* :ignore))
+
+
+(ros:ensure-asdf)
+(asdf:load-system :org-generation)
 
 (defpackage :ros.script.org-generation.3788621230
-  (:use :cl))
+  (:use :cl :org-generation/code-generation))
+
+
 (in-package :ros.script.org-generation.3788621230)
 
+;; -----------------------------------------------------------------------------
+;; Helpers
+;; -----------------------------------------------------------------------------
+
+(declaim (ftype (function (fixnum list) list) group))
+(defun group (n xs)
+  "groups a list into lists of size n"
+  (labels ((rec (i xs acc)
+             (cond ((null xs) (reverse (on-car #'reverse acc)))
+                   ((zerop i) (rec (1- n)
+                                   (cdr xs)
+                                   (cons (list (car xs))
+                                         (on-car #'reverse acc))))
+                   (t         (rec (1- i)
+                                   (cdr xs)
+                                   (on-car (lambda (as) (cons (car xs) as)) acc))))))
+    (rec n xs '())))
+
+(declaim (ftype (function (function list) list) on-car))
+(defun on-car (f xs)
+  "applies a function f onto the car of a list"
+  (cons (funcall f (car xs)) (cdr xs)))
+
+
+
+;; -----------------------------------------------------------------------------
+;; Structures
+;; -----------------------------------------------------------------------------
+
+;; TODO ∷ allow for a global base, if the local isn't found
+
+;; TODO ∷ generalize this concept for all flags!
+
+(defstruct input
+  (flags (fset:empty-map) :type fset:map)
+  others)
+
+(defparameter *help-message*
+  "org-generation: Α documenting tool for projects
+
+Usage: org-generation [-h|--help ] [--config config] [directory file-output]
+")
+
+;; -----------------------------------------------------------------------------
+;; Main functionality
+;; -----------------------------------------------------------------------------
+
+;; TODO ∷ make generic by adding a global config if no local config is found!
+(defun default-config ()
+  #P".org-generation")
+
+(defun seperate-flag (single-flag-check str-check xs)
+  (labels ((rec (xs acc matches)
+             (cond ((null xs)
+                    (make-input :flags matches :others (reverse acc)))
+                   ((funcall single-flag-check (car xs))
+                    (rec (cdr xs) acc (fset:with matches (car xs) t)))
+                   ((and (funcall str-check (car xs)) (cdr xs))
+                    (rec (cddr xs) acc (fset:with matches (car xs) (cadr xs))))
+                   (t
+                    (rec (cdr xs) (cons (car xs) acc) matches)))))
+    (rec xs nil (fset:empty-map))))
+
+(defun seperate-config (xs)
+  (seperate-flag (constantly nil) (lambda (x) (equal "--config" x)) xs))
+
+(defun seperate-all-flags (xs)
+  (seperate-flag (lambda (x) (or (equalp x "--help") (equalp x "-h")))
+                 (lambda (x) (uiop:string-prefix-p "--" x))
+                 xs))
+
+
 (defun main (&rest argv)
-  (declare (ignorable argv)))
+  (let* ((input  (seperate-all-flags argv))
+         (help   (or (fset:lookup (input-flags input) "-h")
+                     (fset:lookup (input-flags input) "--help"))))
+    (if (and (null (input-others input))
+             (= 1 (fset:size (input-flags input)))
+             help)
+        (uiop:println *help-message*)
+        (let ((config (gen-config
+                       ;; TODO ∷ add better error messages here!
+                       (pathname (or (fset:lookup (input-flags input) "--config")
+                                     (default-config))))))
+          (mapc (lambda (file-output)
+                  (generate-org-file config
+                                     (pathname (car  file-output))
+                                     (pathname (cadr file-output))))
+                (group 2 (input-others input)))))))
+
 ;;; vim: set ft=lisp lisp:

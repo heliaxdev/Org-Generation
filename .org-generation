@@ -8,4 +8,4 @@
 
 (lisp
  ;; this makes it use the asd file to check imports instead of loads
- :asdf #p"./org-generation/org-generation.asd")
+ :asdf #p"./org-generation.asd")
