@@ -6,6 +6,7 @@
            #:take-until
            #:file-name
            #:reconstruct-path
+           #:remove-extension
            #:update-headline-level))
 
 (in-package :org-generation/utility)
@@ -52,6 +53,9 @@ Returns a string that reconstructs the unique identifier for the file"
            (let ((disambigous-path (last (pathname-directory file)
                                          (1- extra-context))))
              (reconstruct-path (append disambigous-path (list name))))))))
+
+(defun remove-extension (file)
+  (concatenate 'string (directory-namestring file) (pathname-name file)))
 
 (sig reconstruct-path (-> list &optional string string))
 (defun reconstruct-path (xs &optional (connector "/"))
