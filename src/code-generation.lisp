@@ -275,7 +275,7 @@ and returns a map of files to their alias"
            (if (cdr conflicting-files)
                (fset:map-union map
                                (disambiguate-files conflicting-files
-                                                   :all-conflicts t))
+                                                   :all-conflicts nil))
                map)))
     (let* ((conflict-map
              (reduce #'add-file files :initial-value (fset:empty-map))))
@@ -284,7 +284,7 @@ and returns a map of files to their alias"
 
 (defstruct same-paths
   without-extension
-  (different-extensions nil :type list) )
+  (different-extensions nil :type list))
 
 (sig find-same-paths (-> list list))
 (defun find-same-paths (xs)
@@ -318,9 +318,10 @@ and returns a map of files to their alias"
 the file name to their unique identifier"
   (labels ((rec (remaining-conflicts unique-map dir-path-length)
              (let* ((file-alias   (mapcar (lambda (x)
-                                            (list
-                                             x
-                                             (og/utility:file-name x dir-path-length)))
+                                            (list x
+                                                  (og/utility:file-name
+                                                   (same-paths-without-extension x)
+                                                   dir-path-length)))
                                           remaining-conflicts))
                     (conflict-set (remove-if (lambda (x)
                                                (not (member-if
@@ -331,11 +332,7 @@ the file name to their unique identifier"
                                              file-alias))
                     (non-conflict (remove-if (lambda (x) (member x conflict-set))
                                              file-alias))
-                    (updated-map  (reduce (lambda (map alias-alist)
-                                            (fset:with map
-                                                       (car  alias-alist)
-                                                       (cadr alias-alist)))
-                                          non-conflict
+                    (updated-map  (reduce #'handle-paths non-conflict
                                           :initial-value unique-map)))
                (if (null conflict-set)
                    updated-map
@@ -345,6 +342,22 @@ the file name to their unique identifier"
     (rec (find-same-paths file-list)
          (fset:empty-map)
          (if all-conflicts 2 1))))
+
+(sig handle-paths (-> fset:map list (or fset:map t)))
+(defun handle-paths (map alist)
+  (let* ((same-path  (car alist))
+         (name       (cadr alist))
+         (extensions (same-paths-different-extensions same-path)))
+    (if (cdr extensions)
+        (reduce (lambda (map file)
+                  (fset:with map
+                             file
+                             (concatenate 'string name "." (pathname-type file))))
+                extensions
+                :initial-value map)
+        (fset:with map
+                   (car (same-paths-different-extensions same-path))
+                   name))))
 
 ;; -----------------------------------------------------------------------------
 ;; Tests
