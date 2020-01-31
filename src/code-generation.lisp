@@ -14,7 +14,6 @@
 ;; Program Constants
 ;; -----------------------------------------------------------------------------
 
-(defparameter *acceptable-extensions* (the fset:set (fset:set "hs")))
 (defparameter *filtered-path-prefix*  (the fset:set (fset:set ".")))
 
 ;; -----------------------------------------------------------------------------
@@ -51,10 +50,8 @@
                                 text)
                           (rec level (cdr dirs))))
                        (t
-                        (let ((text (generate-headlines-directory config
-                                                                  (car dirs)
-                                                                  conflict-map
-                                                                  level)))
+                        (let ((text (generate-headlines-directory
+                                     config (car dirs) conflict-map level)))
                           (mapc (lambda (line)
                                   (write-line line file))
                                 text)
@@ -265,10 +262,6 @@ forming a list of org-directory and file info"
 ;; Handling Conflicting Files
 ;; -----------------------------------------------------------------------------
 
-;; - TODO :: tweak logic to use modules, and if two files share the
-;;           same file extension, note that by naming the file
-;;           .extension in the alias
-
 (sig construct-file-alias-map (-> list (or fset:map t)))
 (defun construct-file-alias-map (files)
   "finds any files that share the same identifier
@@ -289,6 +282,34 @@ and returns a map of files to their alias"
       (fset:reduce #'add-conflicts conflict-map :initial-value (fset:empty-map)))))
 
 
+(defstruct same-paths
+  without-extension
+  (different-extensions nil :type list) )
+
+(sig find-same-paths (-> list list))
+(defun find-same-paths (xs)
+  (mapcar #'cdr
+          (fset:convert
+           'list
+           (reduce (lambda (map ele)
+                     (let* ((dir-name (directory-namestring ele))
+                            (item     (fset:lookup map dir-name)))
+                       (fset:with map
+                                  dir-name
+                                  (if item
+                                      (make-same-paths
+                                       :without-extension
+                                       (same-paths-without-extension item)
+                                       :different-extensions
+                                       (cons ele (same-paths-different-extensions item)))
+                                      (make-same-paths
+                                       :without-extension
+                                       (pathname (og/utility:remove-extension ele))
+                                       :different-extensions
+                                       (list ele))))))
+                   xs
+                   :initial-value (fset:map)))))
+
 ;; may do the job of consturct-file-alias-map, however this algorithm is slow
 ;; for a large amount of files
 (sig disambiguate-files (-> list &key (:all-conflicts Boolean) fset:map))
@@ -303,10 +324,10 @@ the file name to their unique identifier"
                                           remaining-conflicts))
                     (conflict-set (remove-if (lambda (x)
                                                (not (member-if
-                                                     (lambda (y)
-                                                       (and (equal (cadr x) (cadr y))
-                                                            (not (equal x y))))
-                                                     file-alias)))
+                                                   (lambda (y)
+                                                     (and (equal (cadr x) (cadr y))
+                                                        (not (equal x y))))
+                                                   file-alias)))
                                              file-alias))
                     (non-conflict (remove-if (lambda (x) (member x conflict-set))
                                              file-alias))
@@ -321,7 +342,7 @@ the file name to their unique identifier"
                    (rec (mapcar #'car conflict-set)
                         updated-map
                         (1+ dir-path-length))))))
-    (rec file-list
+    (rec (find-same-paths file-list)
          (fset:empty-map)
          (if all-conflicts 2 1))))
 
