@@ -7,11 +7,12 @@
   :components
   ((:file "type-signature")
    (:file "maybe")
-   (:file "types"   :depends-on ("maybe" "type-signature"))
-   (:file "utility" :depends-on ("type-signature"))
-   (:file "haskell" :depends-on ("maybe" "types"))
-   (:file "context" :depends-on ("haskell" "types"))
-   (:file "lisp"    :depends-on ("types" "maybe" "type-signature"))
+   (:file "types"           :depends-on ("maybe" "type-signature"))
+   (:file "utility"         :depends-on ("type-signature"))
+   (:file "agda"            :depends-on ("haskell"))
+   (:file "haskell"         :depends-on ("maybe" "types"))
+   (:file "context"         :depends-on ("haskell" "types"))
+   (:file "lisp"            :depends-on ("types" "maybe" "type-signature"))
    (:file "code-generation" :depends-on ("context" "utility" "types" "type-signature" "maybe")))
   :in-order-to ((asdf:test-op (asdf:test-op :org-generation/test))))
 
