@@ -101,7 +101,8 @@ that match the project name"
                                  lines))
          (modules     (mapcar (lambda (import)
                                 ;; TODO make this cadr logic generic
-                                (let ((split-import (uiop:split-string import)))
+                                (let ((split-import (remove-if (lambda (x) (equal "" x))
+                                                               (uiop:split-string import))))
                                   (cond
                                     ((equalp (cadr split-import) "qualified")
                                      (caddr split-import))
