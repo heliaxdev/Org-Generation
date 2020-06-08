@@ -19,4 +19,10 @@
        (og/haskell:convert-path
         #P"/home/katyusha/Documents/Work/Repo/juvix/src/Juvix/Visualize/Graph.hs"
         *test-context*)
-       "Juvix.Visualize.Graph")))
+       "Juvix.Visualize.Graph"))
+  ;; Test does not include src app or test to limit
+  (is (equalp
+       (og/haskell:convert-path
+        #P"/home/katyusha/Documents/Work/Repo/juvix/Juvix/Visualize/Graph.hs"
+        *test-context*)
+       "home.katyusha.Documents.Work.Repo.juvix.Juvix.Visualize.Graph")))

@@ -73,7 +73,8 @@
                    (last-dir-before (cdr next))
                    xs))))
     (og/utility:reconstruct-path (append
-                                  (last-dir-before (pathname-directory file))
+                                  ;; cdr removes the :relative, :absolute
+                                  (last-dir-before (cdr (pathname-directory file)))
                                   (list (pathname-name file)))
                                  ".")))
 
