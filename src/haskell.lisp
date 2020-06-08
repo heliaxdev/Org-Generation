@@ -9,7 +9,7 @@
   (:nicknames #:og/haskell)
   (:export #:module-comments
            #:import-generation
-           #:initalize
+           #:initialize
            #:*extension*
            #:convert-path))
 

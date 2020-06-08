@@ -16,7 +16,7 @@ folder]] also with [[https://github.com/cryptiumlabs/juvix/blob/develop/doc/Code
     =-- |=
 ** Installation
 *** Roswell
-- =ros install cryptiumlabs/org-generation=
+- =ros install metastatedev/org-generation=
 
 Currently the ros file does not correctly launch the program, but it
 will install the library properly.

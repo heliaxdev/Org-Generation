@@ -19,6 +19,9 @@
   :depends-on (:org-generation :fiveam)
   :description "testing org-generation"
   :pathname "test/"
-  :components ((:file "run-tests"))
+  :components ((:file "testpkg")
+               (:file "context" :depends-on ("testpkg"))
+               (:file "haskell" :depends-on ("testpkg" "context"))
+               (:file "run-tests" :depends-on ("haskell")))
   :perform (asdf:test-op (o s)
-                         (uiop:symbol-call :org-test :run-tests)))
+                         (uiop:symbol-call :og/org-test :run-tests)))
