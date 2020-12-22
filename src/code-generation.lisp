@@ -29,9 +29,14 @@
 (defun generate-org-file (config directory output-file
                           &optional (filtered-dirs *filtered-path-prefix*))
   (let* ((extensions   (og/context:valid-extensions config))
-         (files-dirs   (files-and-dirs directory extensions filtered-dirs))
+
+         (files-dirs   (remove-empty-directories
+                        (files-and-dirs directory extensions filtered-dirs)))
+
          (alias-map    (construct-file-alias-map (lose-dir-information files-dirs)))
+
          (files        (alias-file-info files-dirs alias-map))
+
          (conflict-map (og/context:alias-map-to-language-import config alias-map)))
     (with-open-file (file output-file
                           :direction         :output
@@ -208,6 +213,11 @@ forming a list of org-directory and file info"
                                            dirs-annotated))
                               files))))
     (append files-annotated dirs-annotated)))
+
+(sig remove-empty-directories (-> list list))
+(defun remove-empty-directories (dirs)
+  (remove-if #'null
+             (mapcar #'og/directory:remove-empty-dirs dirs)))
 
 (sig lose-dir-information (-> list list))
 (defun lose-dir-information (file-dir-list)
