@@ -15,7 +15,7 @@
   (if (file-info-p org-dir)
       org-dir
       (let* ((new-dirs
-               (remove-if #'null        ; may make it null but that's fine!
+               (remove-if #'null   ; may make it null but that's fine!
                           (mapcar (lambda (x)
                                     (when x
                                       (remove-empty-dirs x)))
@@ -23,12 +23,10 @@
              (new-dir (make-org-directory :file (org-directory-file org-dir)
                                           :name (org-directory-name org-dir)
                                           :dir  new-dirs)))
-        (if (empty-dir? new-dir)
-            nil                         ; remove the unused dir
-            new-dir))))
-
+        (unless (empty-dir? new-dir) ; remove the unused dir
+          new-dir))))
 
 (sig empty-dir? (-> org-directory Boolean))
 (defun empty-dir? (dir)
   (and (nothing? (org-directory-file dir))
-     (every #'null (org-directory-dir dir))))
+       (every #'null (org-directory-dir dir))))
