@@ -170,34 +170,42 @@
 (defun files-and-dirs (directory valid-extensions &optional (filtered-dirs *filtered-path-prefix*))
   "recursively grabs the file and directories
 forming a list of org-directory and file info"
-  (let* ((sub-dirs       (remove-if
-                          (lambda (dir)
-                            (some
-                             #'identity
-                             (fset:convert 'list
-                                           (fset:image
-                                            (lambda (x)
-                                              (uiop:string-prefix-p
-                                               x (og/utility:file-name dir)))
-                                            filtered-dirs))))
-                          (uiop:subdirectories directory)))
-         (files          (remove-if (complement (lambda (x)
-                                                  (fset:lookup valid-extensions (pathname-type x))))
-                                    (uiop:directory-files directory)))
-         (dirs-annotated (mapcar (lambda (dir)
-                                   (let* ((name  (og/utility:file-name dir))
-                                          (file? (find-if
-                                                  (lambda (x)
-                                                    (equal (og/utility:file-name x) name))
-                                                  files)))
-                                     (make-org-directory
-                                      :file (if file?
-                                                (make-just
-                                                 :val (make-file-info :path file?))
-                                                +nothing+)
-                                      :dir  (files-and-dirs dir valid-extensions)
-                                      :name name)))
-                                 sub-dirs))
+  (let* ((sub-dirs
+           (sort
+            (remove-if
+             (lambda (dir)
+               (some
+                #'identity
+                (fset:convert 'list
+                              (fset:image
+                               (lambda (x)
+                                 (uiop:string-prefix-p
+                                  x (og/utility:file-name dir)))
+                               filtered-dirs))))
+             (uiop:subdirectories directory))
+            (lambda (x y) (string<= (namestring x) (namestring y)))))
+
+         (files
+           (sort
+            (remove-if (complement (lambda (x)
+                                     (fset:lookup valid-extensions (pathname-type x))))
+                       (uiop:directory-files directory))
+            (lambda (x y) (string<= (namestring x) (namestring y)))))
+         (dirs-annotated
+           (mapcar (lambda (dir)
+                     (let* ((name  (og/utility:file-name dir))
+                            (file? (find-if
+                                    (lambda (x)
+                                      (equal (og/utility:file-name x) name))
+                                    files)))
+                       (make-org-directory
+                        :file (if file?
+                                  (make-just
+                                   :val (make-file-info :path file?))
+                                  +nothing+)
+                        :dir  (files-and-dirs dir valid-extensions)
+                        :name name)))
+                   sub-dirs))
          ;; slow version of set-difference that maintains ordering
          (files-annotated
            (mapcar (lambda (file)
