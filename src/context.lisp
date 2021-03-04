@@ -20,7 +20,7 @@
 ;;; #+BEGIN_SRC lisp
 ;;;   (sig import-generation (-> context fset:map file-info-extended list))
 ;;;   (sig module-comments   (-> file-info-extended list))
-;;;   (sig initalize         (-> list module.context))
+;;;   (sig initialize        (-> list module.context))
 ;;;   (sig convert-path      (-> pathname context t))
 ;;;   ;; the t here can be anything the module needs!
 ;;; #+END_SRC

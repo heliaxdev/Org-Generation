@@ -9,7 +9,7 @@
   (:nicknames #:og/lisp)
   (:export #:module-comments
            #:import-generation
-           #:initalize
+           #:initialize
            #:*extension*
            #:convert-path))
 

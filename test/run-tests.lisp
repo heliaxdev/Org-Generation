@@ -1,5 +1,6 @@
-(in-package :org-test)
+(in-package :og/org-test)
 
 
 (defun run-tests ()
-  t)
+  (run! 'haskell-test)
+  (run! 'org-directory-test))

@@ -9,7 +9,7 @@
   (:nicknames #:og/haskell)
   (:export #:module-comments
            #:import-generation
-           #:initalize
+           #:initialize
            #:*extension*
            #:convert-path))
 
@@ -73,7 +73,8 @@
                    (last-dir-before (cdr next))
                    xs))))
     (og/utility:reconstruct-path (append
-                                  (last-dir-before (pathname-directory file))
+                                  ;; cdr removes the :relative, :absolute
+                                  (last-dir-before (cdr (pathname-directory file)))
                                   (list (pathname-name file)))
                                  ".")))
 
@@ -101,7 +102,8 @@ that match the project name"
                                  lines))
          (modules     (mapcar (lambda (import)
                                 ;; TODO make this cadr logic generic
-                                (let ((split-import (uiop:split-string import)))
+                                (let ((split-import (remove-if (lambda (x) (equal "" x))
+                                                               (uiop:split-string import))))
                                   (cond
                                     ((equalp (cadr split-import) "qualified")
                                      (caddr split-import))

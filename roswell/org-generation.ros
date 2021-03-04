@@ -5,14 +5,11 @@ exec ros -Q -- $0 "$@"
 |#
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (declaim #+sbcl(sb-ext:muffle-conditions style-warning
-                                           sb-int:type-style-warning))
-
-  (setf asdf:*compile-file-warnings-behaviour* :ignore)
-  (setf asdf:*compile-file-failure-behaviour* :ignore))
+                                           sb-int:type-style-warning)))
 
 
 (ros:ensure-asdf)
-(asdf:load-system :org-generation)
+(handler-bind ((warning #'muffle-warning)) (asdf:load-system :org-generation))
 
 (defpackage :ros.script.org-generation.3788621230
   (:use :cl :org-generation/code-generation))
